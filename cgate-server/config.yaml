@@ -1,0 +1,13 @@
+name: C-Gate Server
+version: "1.0.0"
+slug: cgate_server
+description: >
+  C-Gate Server for Home Assistant.
+arch:
+  - amd64
+  - armv7
+  - aarch64
+url: "https://github.com/RomaDomor/ha-cgate-mqtt"
+map:
+  - config:rw
+  - share:rw
