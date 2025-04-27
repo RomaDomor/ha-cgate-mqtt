@@ -1,4 +1,21 @@
-#!/bin/sh
+#!/usr/bin/env bashio
+# vim: set ft=bash
+
+set -e
+
+# Read options from config
+CBUSIP=$(bashio::config 'cbusip')
+CBUSNAME=$(bashio::config 'cbusname')
+MQTT=$(bashio::config 'mqtt')
+MQTTUSERNAME=$(bashio::config 'mqttusername')
+MQTTPASSWORD=$(bashio::config 'mqttpassword')
+ENABLEHASSDISCOVERY=$(bashio::config 'enableHassDiscovery')
+GETALLONSTART=$(bashio::config 'getallonstart')
+GETALLNETAPP=$(bashio::config 'getallnetapp')
+GETALLPERIOD=$(bashio::config 'getallperiod')
+RETAINREADS=$(bashio::config 'retainreads')
+MESSAGEINTERVAL=$(bashio::config 'messageinterval')
+LOGGING=$(bashio::config 'logging')
 
 # Generate settings.js from HA options
 cat <<EOF > /usr/src/app/settings.js
