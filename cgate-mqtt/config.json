@@ -1,0 +1,45 @@
+{
+  "name": "C-Gate to MQTT Bridge",
+  "version": "1.0.0",
+  "slug": "cgate_mqtt",
+  "description": "C-Gate to MQTT Bridge for Home Assistant",
+  "startup": "services",
+  "boot": "auto",
+  "arch": [
+    "amd64",
+    "armv7",
+    "aarch64"
+  ],
+  "map": [
+    "config:rw",
+    "share:rw"
+  ],
+  "options": {
+    "cbusip": "172.100.10.100",
+    "cbusname": "HOME",
+    "mqtt": "172.100.10.110:1883",
+    "mqttusername": "cbus",
+    "mqttpassword": "Password!",
+    "enableHassDiscovery": false,
+    "getallonstart": false,
+    "getallnetapp": "254/56",
+    "getallperiod": 900,
+    "retainreads": true,
+    "messageinterval": 200,
+    "logging": false
+  },
+  "schema": {
+    "cbusip": "str",
+    "cbusname": "str",
+    "mqtt": "str",
+    "mqttusername": "str",
+    "mqttpassword": "str",
+    "enableHassDiscovery": "bool",
+    "getallonstart": "bool",
+    "getallnetapp": "str",
+    "getallperiod": "int",
+    "retainreads": "bool",
+    "messageinterval": "int",
+    "logging": "bool"
+  }
+}

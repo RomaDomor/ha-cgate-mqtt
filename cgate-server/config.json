@@ -1,0 +1,23 @@
+{
+    "name": "C-Gate Server",
+    "version": "1.0.0",
+    "slug": "cgate_server",
+    "description": "C-Gate Server for Home Assistant",
+    "startup": "services",
+    "boot": "auto",
+    "arch": [
+        "amd64",
+        "armv7",
+        "aarch64"
+    ],
+    "map": [
+        "config:rw",
+        "share:rw"
+    ],
+    "options": {
+        "tag_dir": "/config/tag"
+    },
+    "schema": {
+        "tag_dir": "str"
+    }
+}
