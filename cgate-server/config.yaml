@@ -1,13 +1,28 @@
+# addon: C-Gate Server /config.yaml
 name: C-Gate Server
 version: "1.0.0"
 slug: cgate_server
-description: >
-  C-Gate Server for Home Assistant.
+description: C-Gate Server for Home Assistant. Connects to C-Bus via C-Gate interface.
+url: "https://github.com/RomaDomor/ha-cgate-mqtt" # Official add-on documentation page/repo
 arch:
   - amd64
   - armv7
   - aarch64
-url: "https://github.com/RomaDomor/ha-cgate-mqtt"
+init: false # Does not need special init privileges
+hassio_api: true # Required to access Home Assistant API (needed for bashio config)
+hassio_role: default # Standard role
+# Map the persistent /data directory if needed for logs/tags, otherwise remove if not used
 map:
-  - config:rw
-  - share:rw
+  - addon_config:rw
+ports:
+  20023/tcp: 20023 # Expose C-Gate port 20023 inside container, map to host port 20023
+ports_description:
+  20023/tcp: C-Gate Server Connection Port
+options:
+  access_entries:
+    - "interface 127.0.0.1 admin"
+    - "remote 172.30.32.255 operate"
+schema:
+  access_entries:
+    - str # Defines a list where each item must be a string (IP address or CIDR)
+  # Add schema definitions for other options corresponding to 'options' section above
