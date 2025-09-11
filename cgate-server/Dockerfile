@@ -5,7 +5,7 @@ FROM $BUILD_FROM
 # Install Java (e.g., Java 17 LTS) + curl + unzip using Alpine's package manager 'apk'
 RUN apk update && \
     apk add --no-cache \
-    openjdk17-jre \
+    openjdk8-jre \
     curl \
     unzip \
     ca-certificates && \
