@@ -1,6 +1,6 @@
 # addon: C-Gate Server /config.yaml
 name: C-Gate Server
-version: "1.0.2"
+version: "1.0.3"
 slug: cgate_server
 description: C-Gate Server for Home Assistant. Connects to C-Bus via C-Gate interface.
 url: "https://github.com/RomaDomor/ha-cgate-mqtt" # Official add-on documentation page/repo

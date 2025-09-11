@@ -13,6 +13,13 @@ RUN apk update && \
 
 # # Define ARG for download URL
 # ARG CGATE_DOWNLOAD_URL=https://download.schneider-electric.com/files?p_File_Name=cgate-2.11.8_3282.zip
+RUN SEC_FILE="/usr/lib/jvm/java-1.8-openjdk/jre/lib/security/java.security" && \
+    echo "Patching $SEC_FILE to allow TLSv1/TLSv1.1..." && \
+    sed -i \
+    -e 's/\<TLSv1, \?//g' \
+    -e 's/\<TLSv1\.1, \?//g' \
+    "$SEC_FILE" && \
+    grep -n '^jdk\.tls\.disabledAlgorithms=' "$SEC_FILE"
 
 # # Create app directory, download, unzip, cleanup in one layer
 # # Using /opt is a common practice for manually installed software
