@@ -1,6 +1,6 @@
 # addon: C-Gate Server /config.yaml
 name: C-Gate Server
-version: "1.0.0"
+version: "1.0.1"
 slug: cgate_server
 description: C-Gate Server for Home Assistant. Connects to C-Bus via C-Gate interface.
 url: "https://github.com/RomaDomor/ha-cgate-mqtt" # Official add-on documentation page/repo
@@ -16,8 +16,10 @@ map:
   - addon_config:rw
 ports:
   20023/tcp: 20023 # Expose C-Gate port 20023 inside container, map to host port 20023
+  20123/tcp: 20123 # Expose C-Gate port 20123 inside container, map to host port 20123
 ports_description:
   20023/tcp: C-Gate Server Connection Port
+  20123/tcp: C-Gate Server Secure Connection Port
 options:
   access_entries:
     - "interface 127.0.0.1 admin"

@@ -11,17 +11,22 @@ RUN apk update && \
     ca-certificates && \
     echo "Packages installed."
 
-# Define ARG for download URL
-ARG CGATE_DOWNLOAD_URL=https://download.schneider-electric.com/files?p_File_Name=cgate-2.11.8_3282.zip
+# # Define ARG for download URL
+# ARG CGATE_DOWNLOAD_URL=https://download.schneider-electric.com/files?p_File_Name=cgate-2.11.8_3282.zip
 
-# Create app directory, download, unzip, cleanup in one layer
-# Using /opt is a common practice for manually installed software
-WORKDIR /app # Temporary workdir for download
-RUN curl -f -L ${CGATE_DOWNLOAD_URL} -o cgate.zip && \
-    unzip cgate.zip -d /opt && \
-    rm cgate.zip && \
+# # Create app directory, download, unzip, cleanup in one layer
+# # Using /opt is a common practice for manually installed software
+# WORKDIR /app # Temporary workdir for download
+# RUN curl -f -L ${CGATE_DOWNLOAD_URL} -o cgate.zip && \
+#     unzip cgate.zip -d /opt && \
+#     rm cgate.zip && \
+#     mv /opt/cgate /opt/cgate-server && \
+#     echo "C-Gate downloaded and extracted to /opt/cgate-server"
+COPY cgate.zip /tmp/cgate.zip
+RUN unzip /tmp/cgate.zip -d /opt && \
+    rm /tmp/cgate.zip && \
     mv /opt/cgate /opt/cgate-server && \
-    echo "C-Gate downloaded and extracted to /opt/cgate-server"
+    echo "C-Gate copied and extracted to /opt/cgate-server"
 
 # Set workdir where jar will run (or adjust run.sh)
 WORKDIR /opt/cgate-server
