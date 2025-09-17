@@ -33,7 +33,7 @@ RUN unzip /tmp/cgate.zip -d /opt && \
 # Healthcheck
 RUN mkdir -p /opt/health
 COPY --chmod=0755 healthcheck.sh /opt/health/healthcheck.sh
-HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD /opt/health/healthcheck.sh
 
 # Set workdir where jar will run (or adjust run.sh)
