@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-HOST="localhost"
+HOST="127.0.0.1"
 PORT="20023"
 allowed_re='^(new|sync|ok)$'
 
