@@ -17,25 +17,29 @@ RETAINREADS=$(bashio::config 'retainreads')
 MESSAGEINTERVAL=$(bashio::config 'messageinterval')
 LOGGING=$(bashio::config 'logging')
 
+# Escape backslashes and single quotes so option values (e.g. passwords)
+# cannot break the generated JS string literals.
+esc() { printf '%s' "$1" | sed "s/\\\\/\\\\\\\\/g; s/'/\\\\'/g"; }
+
 # Generate settings.js from HA options
 cat <<EOF > /usr/src/app/settings.js
 //C-GATE IP Address
-exports.cbusip = '${CBUSIP}';
+exports.cbusip = '$(esc "${CBUSIP}")';
 
 //cbus project name
-exports.cbusname = "${CBUSNAME}";
+exports.cbusname = '$(esc "${CBUSNAME}")';
 
 //mqtt server ip:port (my Home Assistant MQTT Broker)
-exports.mqtt = '${MQTT}';
-exports.mqttusername = '${MQTTUSERNAME}';
-exports.mqttpassword = '${MQTTPASSWORD}';
+exports.mqtt = '$(esc "${MQTT}")';
+exports.mqttusername = '$(esc "${MQTTUSERNAME}")';
+exports.mqttpassword = '$(esc "${MQTTPASSWORD}")';
 
 // Map the C-Bus project information to Home Assistant Discovery Messages
 exports.enableHassDiscovery = ${ENABLEHASSDISCOVERY};
 
 // These should not need to be changed
 exports.getallonstart = ${GETALLONSTART};
-exports.getallnetapp = '${GETALLNETAPP}';
+exports.getallnetapp = '$(esc "${GETALLNETAPP}")';
 exports.getallperiod = ${GETALLPERIOD};
 exports.retainreads = ${RETAINREADS};
 exports.messageinterval = ${MESSAGEINTERVAL};
@@ -43,11 +47,6 @@ exports.messageinterval = ${MESSAGEINTERVAL};
 //logging
 exports.logging = ${LOGGING};
 EOF
-
-# Copy HOME.xml if present
-if [ -f /config/tag/HOME.xml ]; then
-  cp /config/tag/HOME.xml /usr/src/app/HOME.xml
-fi
 
 # Start the main process
 exec node index.js
