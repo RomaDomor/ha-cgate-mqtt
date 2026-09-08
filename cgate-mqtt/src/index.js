@@ -14,6 +14,8 @@ const logging = !!settings.logging;
 let tree = '';
 let treenet = 0;
 let buffer = '';
+let eventBuffer = '';
+let getallInterval = null;
 let commandConnected = false;
 let eventConnected = false;
 let clientConnected = false;
@@ -76,8 +78,8 @@ const started = () => {
             console.log('Getting all values');
             commandQueue.push(`GET //${settings.cbusname}/${settings.getallnetapp}/* level\n`);
         }
-        if (settings.getallnetapp && settings.getallperiod) {
-            setInterval(() => {
+        if (settings.getallnetapp && settings.getallperiod && !getallInterval) {
+            getallInterval = setInterval(() => {
                 console.log('Getting all values');
                 commandQueue.push(`GET //${settings.cbusname}/${settings.getallnetapp}/* level\n`);
             }, settings.getallperiod * 1000);
@@ -92,18 +94,19 @@ client.on('connect', () => {
     started();
 
     client.subscribe('cbus/write/#', (err) => {
-        if (err) {
-            console.error('MQTT subscribe error:', err);
-            return;
-        }
-        client.on('message', handleMqttMessage);
+        if (err) console.error('MQTT subscribe error:', err);
     });
 
     mqttQueue.push({ topic: 'hello/world', payload: 'CBUS ON' });
 });
 
-client.on('disconnect', () => {
+// Register once — re-registering per (re)connect duplicates command execution.
+client.on('message', handleMqttMessage);
+
+// mqtt.js signals a lost connection with 'close', not 'disconnect'.
+client.on('close', () => {
     clientConnected = false;
+    console.log('MQTT DISCONNECTED');
 });
 
 // MQTT message handler
@@ -245,9 +248,13 @@ function processCommandLine(line) {
 }
 
 function processCbusStatus(status) {
-    const [addressStr, levelStr] = status.trim().split(' ');
+    // Only handle "//PROJECT/net/app/group: level=N" reports; other 300
+    // responses (sync notices etc.) must not crash the bridge.
+    const [addressStr, levelStr] = status.trim().split(' ').filter(Boolean);
+    if (!addressStr || !levelStr || !levelStr.includes('=')) return;
     const address = addressStr.slice(0, -1).split('/');
     const level = parseInt(levelStr.split('=')[1], 10);
+    if (address.length < 6 || isNaN(level)) return;
     const topicBase = `cbus/read/${address[3]}/${address[4]}/${address[5]}`;
     if (level === 0) {
         if (logging) console.log(`C-Bus status: ${topicBase} OFF (0%)`);
@@ -264,9 +271,16 @@ function processCbusStatus(status) {
 }
 
 event.on('data', (data) => {
-    const parts = data.toString().split(' ');
-    if (parts[0] !== 'lighting') return;
+    const lines = (eventBuffer + data.toString()).split('\n');
+    eventBuffer = lines.pop();
+    lines.forEach(processEventLine);
+});
+
+function processEventLine(line) {
+    const parts = line.trim().split(' ').filter(Boolean);
+    if (parts[0] !== 'lighting' || !parts[2]) return;
     const address = parts[2].split('/');
+    if (address.length < 6) return;
     const topicBase = `cbus/read/${address[3]}/${address[4]}/${address[5]}`;
     switch (parts[1]) {
         case 'on':
@@ -296,7 +310,7 @@ event.on('data', (data) => {
         default:
             break;
     }
-});
+}
 
 // Start connections
 command.connect(COMPORT, HOST);

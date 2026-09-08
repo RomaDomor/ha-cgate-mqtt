@@ -1,5 +1,5 @@
 name: C-Gate to MQTT Bridge
-version: "1.0.0"
+version: "1.0.1"
 slug: cgate_mqtt
 description: >
   C-Gate to MQTT Bridge for Home Assistant. Connects C-Gate to your MQTT broker and supports Home Assistant discovery.
