@@ -8,6 +8,7 @@ set -e # Exit immediately if a command exits with a non-zero status.
 CGATE_DIR="/opt/cgate-server"
 CONFIG_DIR="${CGATE_DIR}/config"
 TAG_DIR="${CGATE_DIR}/tag"
+LOG_DIR="${CGATE_DIR}/logs"
 CONFIG_FILE="${CONFIG_DIR}/C-GateConfig.txt"
 ACCESS_FILE="${CONFIG_DIR}/access.txt"
 JAR_FILE="${CGATE_DIR}/cgate.jar" # Assuming jar is in /cgate
@@ -18,14 +19,20 @@ fi
 if [ ! -L "${TAG_DIR}" ] && [ -d "${TAG_DIR}" ]; then
     rm -rf ${TAG_DIR}
 fi
+if [ ! -L "${LOG_DIR}" ] && [ -d "${LOG_DIR}" ]; then
+    rm -rf ${LOG_DIR}
+fi
 
 # Ensure target directories exist
 mkdir -p /config/config
 mkdir -p /config/tag
+mkdir -p /config/logs
 
-# Create symlinks
+# Create symlinks (logs too, so event.txt/sync errors survive restarts and
+# are readable from the addon_config share)
 ln -sf /config/config ${CONFIG_DIR}
 ln -sf /config/tag ${TAG_DIR}
+ln -sf /config/logs ${LOG_DIR}
 # --- Generate access.txt from UI options ---
 bashio::log.info "Generating C-Gate access control file (${ACCESS_FILE})..."
 
