@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
 # C-Gate healthcheck:
 #  - hard-fail immediately if the command port doesn't answer (server dead)
-#  - fail on networks stuck in a bad state (e.g. hung in 'closed' after a
-#    power loss), but only after the bad state persists for GRACE consecutive
-#    probes, and after first trying in-place recovery (net open + net sync)
-#    over the command port. This keeps the self-healing restart for genuine
-#    hangs without restart-looping when a restart cannot help (e.g. a unit
-#    feeding garbage that keeps a network in State=error).
+#  - a network is HEALTHY only if its interface is running AND its state is
+#    new/sync/ok. A network with InterfaceState=closed/closing (dead bus, no
+#    traffic) or State=error is bad -- this catches networks that get closed
+#    and don't auto-reopen (a clean close doesn't trigger auto-reopen, and a
+#    stuck State=new/InterfaceState=closed would otherwise look "healthy").
+#  - on a bad network, try in-place recovery (net open + net sync) every probe;
+#    only go unhealthy (letting the watchdog restart) after GRACE consecutive
+#    bad probes, so transient reopens/syncs don't cause restart loops.
 set -u
 
 HOST="127.0.0.1"
 PORT="20023"
-allowed_re='State=(new|sync|ok)'
 STATE_FILE="/tmp/cgate-health.bad-count"
 GRACE=10 # consecutive bad probes (30s interval => 5 min) before unhealthy
 
@@ -41,7 +42,17 @@ net_lines="$(grep -Ei '^131[- ]?network=' <<<"$output" || true)"
 if [[ -z "$net_lines" ]]; then
     bad="(no 'net list' output)"
 else
-    bad="$(grep -Eiv "$allowed_re" <<<"$net_lines" || true)"
+    # Bad = State=error OR a closed/closing interface (dead bus that won't
+    # carry traffic). Normal transients (InterfaceState=opening, or
+    # State=new/sync/ok while running) are left alone; the closed case is the
+    # one that killed the 1st floor -- closed nets don't auto-reopen on a
+    # clean close and previously looked "healthy" via the State field alone.
+    bad="$(awk '
+        {
+            err  = ($0 ~ /State=error/)
+            dead = ($0 ~ /InterfaceState=(closed|closing|streamsclosed)/)
+            if (err || dead) print
+        }' <<<"$net_lines")"
 fi
 
 if [[ -z "$bad" ]]; then
