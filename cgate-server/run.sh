@@ -33,6 +33,24 @@ mkdir -p /config/logs
 ln -sf /config/config ${CONFIG_DIR}
 ln -sf /config/tag ${TAG_DIR}
 ln -sf /config/logs ${LOG_DIR}
+
+# --- Keep the previous run's event log (1.0.9) ---
+# C-Gate rolls logs/event.txt over at startup but restarts its daily index at 0, so the next
+# rollover overwrites that day's event-<date>-0.txt (2026-11-18: the log of the 03:11 incident was
+# lost that way). Move event.txt and the numbered files of today and yesterday (the container
+# clock may be UTC while C-Gate names files in local time) out of its way first.
+ARCHIVE_DIR="/config/logs/archive"
+mkdir -p "${ARCHIVE_DIR}"
+boot_ts="$(date +%Y%m%d-%H%M%S)"
+today="$(date +%Y%m%d)"
+yesterday="$(date -d "@$(( $(date +%s) - 86400 ))" +%Y%m%d 2>/dev/null || echo "${today}")"
+for f in /config/logs/event.txt /config/logs/event-"${today}"-*.txt /config/logs/event-"${yesterday}"-*.txt; do
+    if [ -f "${f}" ]; then
+        mv "${f}" "${ARCHIVE_DIR}/${boot_ts}-$(basename "${f}")"
+    fi
+done
+find "${ARCHIVE_DIR}" -type f -mtime +14 -delete 2>/dev/null || true
+bashio::log.info "Previous event logs archived to ${ARCHIVE_DIR} (kept 14 days)"
 # --- Generate access.txt from UI options ---
 bashio::log.info "Generating C-Gate access control file (${ACCESS_FILE})..."
 

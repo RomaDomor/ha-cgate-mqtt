@@ -33,7 +33,9 @@ RUN unzip /tmp/cgate.zip -d /opt && \
 # Healthcheck
 RUN mkdir -p /opt/health
 COPY --chmod=0755 healthcheck.sh /opt/health/healthcheck.sh
-HEALTHCHECK --interval=30s --timeout=15s --start-period=120s --retries=3 \
+# The script decides when to go unhealthy (GRACE consecutive bad probes, ~5 min) and returns in
+# ~1 s, so Docker's own retry count is 1 (1.0.9; see healthcheck.sh).
+HEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=1 \
     CMD /opt/health/healthcheck.sh
 
 # Set workdir where jar will run (or adjust run.sh)
